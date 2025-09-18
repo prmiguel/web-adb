@@ -204,18 +204,21 @@
 
             var device = $(this).data('device');
 
-            $('.device-content:not([data-device=' + device + '])').hide();
-            $('.device-content[data-device=' + device + ']').show();
+            $('.device-content:not([data-device="' + device + '"])').hide();
+            $('.device-content[data-device="' + device + '"]').show();
 
-            if ($('.nav-item.active[data-device=' + device + ']').length == 0) {
-              $('.nav-item[data-device=' + device + ']:first-child a').tab('show');
+            if ($('.nav-item.active[data-device="' + device + '"]').length == 0) {
+              $('.nav-item[data-device="' + device + '"]:first-child a').tab('show');
             }
           });
 
           $('.screenshot-button').click(function() {
             var device = $(this).data('device');
-            $('#' + device + '-screenshot').attr('src', '');
-            $('#' + device + '-screenshot').attr('src', 'screenshot/' + device + '?rnd=' + Math.random());
+            function updateImage() {
+              // $('#' + device + '-screenshot').attr('src', '');
+              $('#' + device + '-screenshot').attr('src', 'screenshot/' + device + '?rnd=' + Math.random());
+            }
+            setInterval(updateImage, 3000);
           });
 
           $('.logcat-button').click(function() {

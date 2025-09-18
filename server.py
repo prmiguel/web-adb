@@ -16,6 +16,12 @@ cli.add_argument('--cert-file', dest='certfile')
 cli.add_argument('--adb-path', dest='adbpath', default=os.environ.get('WEB_ADB'))
 arguments = cli.parse_args()
 
+def _deviceIdColonReplace(id):
+    return id.replace(":", r"_")
+
+def _deviceIdUnderscoreReplace(id):
+    return id.replace("_", r":")
+
 def _adb(args, device=None):
     base = [arguments.adbpath]
     if device is not None:
@@ -27,7 +33,7 @@ def _adb(args, device=None):
     return (p.returncode, stdout, stderr)
 
 def _getprop(device, property, default):
-    (rc, out, _) = _adb(['shell', 'getprop', property], device=device)
+    (rc, out, _) = _adb(['shell', 'getprop', property], device=_deviceIdUnderscoreReplace(device))
 
     if not rc == 0:
         return default
@@ -37,7 +43,7 @@ def _getprop(device, property, default):
         return default
 
 def _getnetwork(device):
-    (rc, out, err) = _adb(['shell', 'dumpsys', 'wifi'], device=device)
+    (rc, out, err) = _adb(['shell', 'dumpsys', 'wifi'], device=_deviceIdUnderscoreReplace(device))
     print('network done ' + str(rc))
     if rc != 0:
         print(err)
@@ -58,7 +64,7 @@ def _getnetwork(device):
     return network
 
 def _getbattery(device):
-    (rc, out, err) = _adb(['shell', 'dumpsys', 'battery'], device=device)
+    (rc, out, err) = _adb(['shell', 'dumpsys', 'battery'], device=_deviceIdUnderscoreReplace(device))
     print('battery done ' + str(rc))
     if rc != 0:
         print(err)
@@ -93,7 +99,7 @@ def _getbattery(device):
     return battery
 
 def _getscreen(device):
-    (rc, out, err) = _adb(['shell', 'dumpsys', 'input'], device=device)
+    (rc, out, err) = _adb(['shell', 'dumpsys', 'input'], device=_deviceIdUnderscoreReplace(device))
     print('screen done ' + str(rc))
     if rc != 0:
         print(err)
@@ -119,7 +125,7 @@ def _getscreen(device):
         elif  key == 'surfaceorientation':
             screen['orientation'] = value
 
-    (rc, out, err) = _adb(['shell', 'wm', 'density'], device=device)
+    (rc, out, err) = _adb(['shell', 'wm', 'density'], device=_deviceIdUnderscoreReplace(device))
     tokens = out.split(': ')
     if len(tokens) == 2:
         screen['density'] = tokens[1].strip()
@@ -137,7 +143,7 @@ def get_devices(handler):
 
         id = tokens[0]
         devices.append({
-            'id': id,
+            'id': _deviceIdColonReplace(id),
             'manufacturer': _getprop(id, 'ro.product.manufacturer', 'unknown'),
             'model': _getprop(id, 'ro.product.model', 'unknown'),
             'sdk': _getprop(id, 'ro.build.version.sdk', 'unknown'),
@@ -152,7 +158,7 @@ def get_screenshot(handler):
     path = urlparse(handler.path).path
     device = path[12:]
     print(device)
-    (rc, out, err) = _adb(['exec-out', 'screencap', '-p'], device=device)
+    (rc, out, err) = _adb(['exec-out', 'screencap', '-p'], device=_deviceIdUnderscoreReplace(device))
     print('screencap done ' + str(rc))
     if rc != 0:
         print(err)
@@ -162,7 +168,7 @@ def get_logcat(handler):
     path = urlparse(handler.path).path
     device = path[8:]
     print(device)
-    (rc, out, err) = _adb(['logcat', '-d', '-v', 'brief'], device=device)
+    (rc, out, err) = _adb(['logcat', '-d', '-v', 'brief'], device=_deviceIdUnderscoreReplace(device))
     print('logcat done ' + str(rc))
     if rc != 0:
         print(err)
@@ -174,13 +180,13 @@ def get_info(handler):
     print(device)
 
     info = {
-        'id': device,
+        'id': _deviceIdColonReplace(device),
         'manufacturer': _getprop(id, 'ro.product.manufacturer', 'unknown'),
         'model': _getprop(id, 'ro.product.model', 'unknown'),
         'sdk': _getprop(id, 'ro.build.version.sdk', 'unknown'),
-        'network': _getnetwork(device),
-        'battery': _getbattery(device),
-        'screen': _getscreen(device)
+        'network': _getnetwork(_deviceIdUnderscoreReplace(device)),
+        'battery': _getbattery(_deviceIdUnderscoreReplace(device)),
+        'screen': _getscreen(_deviceIdUnderscoreReplace(device))
     }
     return info
 
@@ -190,7 +196,7 @@ def post_key(handler):
         device = payload['device']
         key = payload['key']
         print(device + ' : ' + str(key))
-        (rc, _, err) = _adb(['shell', 'input', 'keyevent', key], device=device)
+        (rc, _, err) = _adb(['shell', 'input', 'keyevent', key], device=_deviceIdUnderscoreReplace(device))
         print('keyevent done ' + str(rc))
         if rc != 0:
             print(err)
@@ -203,7 +209,7 @@ def post_text(handler):
         text = payload['text']
         text = text.replace(' ', '%s')
         print(device + ' : ' + str(text))
-        (rc, _, err) = _adb(['shell', 'input', 'text', '"' + text + '"'], device=device)
+        (rc, _, err) = _adb(['shell', 'input', 'text', '"' + text + '"'], device=_deviceIdUnderscoreReplace(device))
         print('text done ' + str(rc))
         if rc != 0:
             print(err)
@@ -216,7 +222,7 @@ def post_tap(handler):
         x = payload['x']
         y = payload['y']
         print(device + ' : ' + str(x) + ', ' + str(y))
-        (rc, _, err) = _adb(['shell', 'input', 'tap', x, y], device=device)
+        (rc, _, err) = _adb(['shell', 'input', 'tap', x, y], device=_deviceIdUnderscoreReplace(device))
         print('tap done ' + str(rc))
         if rc != 0:
             print(err)
@@ -228,7 +234,7 @@ def post_shell(handler):
         device = payload['device']
         command = payload['command']
         print(device + ' : ' + command)
-        (rc, out, err) = _adb(['shell', command], device=device)
+        (rc, out, err) = _adb(['shell', command], device=_deviceIdUnderscoreReplace(device))
         print('shell done ' + str(rc))
         if rc != 0:
             print(err)
@@ -239,7 +245,7 @@ def post_reboot(handler):
     if 'device' in payload:
         device = payload['device']
         print(device)
-        (rc, _, err) = _adb(['reboot'], device=device)
+        (rc, _, err) = _adb(['reboot'], device=_deviceIdUnderscoreReplace(device))
         print('reboot done ' + str(rc))
         if rc != 0:
             print(err)
