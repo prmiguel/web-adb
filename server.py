@@ -255,6 +255,7 @@ class RESTRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.routes = {
             r'^/$': {'file': 'web/index.html', 'media_type': 'text/html'},
+            r'^/monitor$': {'file': 'web/monitor.html', 'media_type': 'text/html'},
             r'^/devices$': {'GET': get_devices, 'media_type': 'application/json'},
             r'^/screenshot': {'GET': get_screenshot, 'media_type': 'image/png', 'cache_type': 'no-cache, no-store, must-revalidate'},
             r'^/logcat': {'GET': get_logcat, 'media_type': 'text/plain'},

@@ -68,96 +68,30 @@
     <table id='device-list' class='table table-hover'>
       <tr>
         <th>ID</th>
-        <th>Manufacturer</th>
-        <th>Model</th>
-        <th>SDK</th>
+        <th>Action</th>
+        <th>Preview</th>
       </tr>
       {{#each devices}}
       <tr class='device-row' data-device='{{id}}'>
-        <td>{{id}}</td>
-        <td>{{manufacturer}}</td>
-        <td>{{model}}</td>
-        <td>{{sdk}}</td>
+        <td>
+          <div class="col-md-2 col-lg-2">
+            {{id}}
+          </div>
+        </td>
+        <td>
+          <div class="col-md-2 col-lg-2">
+            <i id='{{id}}-icon1' class='fa fa-play screenshot-button' data-device='{{id}}' title='Screen shot'></i>
+            <i id='{{id}}-icon2' class='fa fa-pause screenshot-button hidden' data-device='{{id}}' title='Screen shot'></i>
+          </div>
+        </td>
+        <td>
+          <div class="col-md-2 col-lg-2">
+            <img id='{{id}}-screenshot' class='screenshot img-thumbnail' src='screenshot/{{id}}' data-device='{{id}}'/>
+          </div> 
+        </td>
       </tr>
       {{/each}}
     </table>
-    {{#each devices}}
-    <div class='container-fluid device-content' style='display: none' data-device='{{id}}'>
-      <div class='row'>
-        <div class='col-md-4'>
-          <div>
-            <i class='fa fa-camera screenshot-button' data-device='{{id}}' title='Screen shot'></i>
-            | 
-            <i class='fa fa-bolt reboot-button' data-device='{{id}}' title='Reboot'></i>
-          </div>
-          <img id='{{id}}-screenshot' class='screenshot' src='' data-device='{{id}}'/>
-        </div>
-        <div class='col-md-8'>
-          <ul class='nav nav-tabs'>
-            <li class='nav-item' data-device='{{id}}'><a class='nav-link' data-toggle='tab' data-target='#{{id}}-info-pane'>Info</a></li>
-            <li class='nav-item' data-device='{{id}}'><a class='nav-link' data-toggle='tab' data-target='#{{id}}-logcat-pane'>Logcat</a></li>
-            <li class='nav-item' data-device='{{id}}'><a class='nav-link' data-toggle='tab' data-target='#{{id}}-shell-pane'>Shell</a></li>
-            <li class='nav-item' data-device='{{id}}'><a class='nav-link' data-toggle='tab' data-target='#{{id}}-input-pane'>Input</a></li>
-          </ul>
-          <div class='tab-content'>
-            <div id='{{id}}-info-pane' class='tab-pane' data-device='{{id}}'>
-              <div id='{{id}}-network' class='info'>
-                <p>Network</p>
-                <div><span>SSID:</span><span>{{network.ssid}}</span></div>
-                <div><span>Connected:</span><span>{{network.connected}}</span></div>
-              </div>
-              <div id='{{id}}-battery' class='info'>
-                <p>Battery</p>
-                <div><span>Powered:</span><span>{{battery.plugged}}</span></div>
-                <div><span>Level:</span><span>{{battery.level}}</span></div>
-                <div><span>Status:</span><span>{{formatStatus battery.status}}</span></div>
-                <div><span>Health:</span><span>{{formatHealth battery.health}}</span></div>
-              </div>
-              <div id='{{id}}-screen' class='info'>
-                <p>Screen</p>
-                <div><span>Density:</span><span>{{screen.density}}</span></div>
-                <div><span>Width:</span><span>{{screen.width}}</span></div>
-                <div><span>Height:</span><span>{{screen.height}}</span></div>
-                <div><span>Orientation:</span><span>{{screen.orientation}}</span></div>
-              </div>
-            </div>
-            <div id='{{id}}-logcat-pane' class='tab-pane' data-device='{{id}}'>
-              <div>
-                <i class='fa fa-file-text logcat-button' data-device='{{id}}' title='Logcat'></i>
-                | 
-                <i class='fa fa-trash logcat-clear-button' data-device='{{id}}' title='Clear'></i>
-              </div>
-              <pre id='{{id}}-logcat' class='logcat'></pre>
-            </div>
-            <div id='{{id}}-shell-pane' class='tab-pane' data-device='{{id}}'>
-              <input id='{{id}}-shell-input' class='shell-input' data-device='{{id}}'/>
-              <pre id='{{id}}-shell-output' class='shell'></pre>
-            </div>
-            <div id='{{id}}-input-pane' class='tab-pane' data-device='{{id}}'>
-              <div class='info'>
-                <p>Special keys:</p>
-                <i class='fa fa-home device-special-key' data-device='{{id}}' data-key='3' title='Home'></i>
-                | 
-                <i class='fa fa-chevron-left device-special-key' data-device='{{id}}' data-key='4' title='Back'></i>
-                | 
-                <i class='fa fa-th device-special-key' data-device='{{id}}' data-key='187' title='App Switch'></i>
-                | 
-                <span class='device-special-key' data-device='{{id}}' data-key='66' title='Enter'>⏎</span>
-                | 
-                <span class='device-special-key' data-device='{{id}}' data-key='67' title='Backspace'>⌫</span>
-                | 
-                <span class='device-special-key' data-device='{{id}}' data-key='61' title='Tab'>⇥</span>
-              </div>
-              <div class='info'>
-                <p>Send text:</p>
-                <input id='{{id}}-text-input' class='text-input' data-device='{{id}}'/>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    {{/each}}
   </script>
 
 </head>
@@ -177,17 +111,6 @@
 
   <script>
     $(function() {
-      Handlebars.registerHelper('formatStatus', function(status) {
-        var status_strings = ['Unknown', 'Charging', 'Discharging', 'Not charging', 'Full'];
-        return status_strings[status - 1];
-      });
-
-      Handlebars.registerHelper('formatHealth', function(health) {
-        var health_strings = ['Unknown', 'Good', 'Overheated', 'Dead', 'Over voltage', 'Unspecified failure', 'Cold'];
-        return health_strings[health - 1];
-      });
-
-
       $.ajax({
         url: 'devices',
         type: 'GET',
@@ -199,26 +122,39 @@
           var html = template(context);
           $('#grid').html(html);
 
-          $('.device-row').click(function() {
-            $(this).addClass('highlight').siblings().removeClass('highlight');
+          // $('.screenshot-button').click(function() {
+          //   var device = $(this).data('device');
 
+          //   function updateImage() {
+          //     $('#' + device + '-screenshot').attr('src', 'screenshot/' + device + '?rnd=' + Math.random());
+          //   }
+          //   setInterval(updateImage, 2000);
+          // });
+
+          $('.fa-play').click(function() {
             var device = $(this).data('device');
+            document.getElementById(device + '-icon1').classList.add('hidden');
+            document.getElementById(device + '-icon2').classList.remove('hidden');
+            // $('#' + device + '-icon1.fa-play').classList.add('hidden');
+            // $('#' + device + '-icon2.fa-pause').classList.remove('hidden');
 
-            $('.device-content:not([data-device="' + device + '"])').hide();
-            $('.device-content[data-device="' + device + '"]').show();
-
-            if ($('.nav-item.active[data-device="' + device + '"]').length == 0) {
-              $('.nav-item[data-device="' + device + '"]:first-child a').tab('show');
-            }
-          });
-
-          $('.screenshot-button').click(function() {
-            var device = $(this).data('device');
             function updateImage() {
-              // $('#' + device + '-screenshot').attr('src', '');
               $('#' + device + '-screenshot').attr('src', 'screenshot/' + device + '?rnd=' + Math.random());
             }
-            setInterval(updateImage, 3000);
+            let intervalId = setInterval(updateImage, 2000);
+            $('#' + device + '-screenshot').attr('intervalId', intervalId);
+          });
+
+          $('.fa-pause').click(function() {
+            var device = $(this).data('device');
+            document.getElementById(device + '-icon1').classList.remove('hidden');
+            document.getElementById(device + '-icon2').classList.add('hidden');
+            // $('#' + device + '-icon2.fa-pause').classList.add('hidden');
+            // $('#' + device + '-icon1.fa-play').classList.remove('hidden');
+            let intervalId = $('#' + device + '-screenshot').attr('intervalId');
+            clearInterval(intervalId);
+            $('#' + device + '-screenshot').attr('src', '');
+            $('#' + device + '-screenshot').attr('src', 'screenshot/' + device + '?rnd=' + Math.random());
           });
 
           $('.logcat-button').click(function() {
